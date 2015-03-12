@@ -1,0 +1,42 @@
+Tabcorp Simple Tote Betting Host
+--------------------------------
+
+Files:
+
+./lib.js
+    - contains the classes and core functionality required to complete the challenge
+    - file is written using only javascript language features supported by the v8 engine (ECMA-262 5th Ed.)
+    - file exports 2 new classes and re-exports 1:
+        + Product
+        + ProductHandler
+        + Math - adds add(x, y) method
+    - the code is written in a quasi-functional style
+
+./test.js
+    - contains unit tests relevant to ./lib.js
+    - unit test framework used is 'nodeunit'
+        + can be installed with: npm install nodeunit -g
+        + can be run with: nodeunit ./test.js
+    - there are no unit tests defined for ./run.js
+
+./run.js
+    - contains "plumbing" used to facilitate the stdin -> stdout pipeline
+    - responsible for running the primary usecase:
+        + namely, that the solution processes stdin and writes to stdout
+    - makes use of 1 external npm package:
+        + split - splits a text stream into a line stream
+            * can be installed with: npm install split -g
+
+./input
+    - contains the test input outlined in the challenge document
+
+./expect
+    - contains the expected test output outlined in the challenge document
+
+./acceptance.sh
+    - a small bash script that will run the solution in its entirety, and diff'ing the output against the expected output.
+
+Notes:
+    - the bulk of this challenge took approximately 4-6 hours to complete.
+        + it included a power sub-station failure and a separate internet outage, for added fun.
+    - I feel that this challenge was well-described and enjoyable.
