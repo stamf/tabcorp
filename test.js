@@ -1,12 +1,6 @@
 var tabcorp = require('./lib.js');
 
-//var ph = new tabcorp.ProductHandler;
-//
-//    ph.registerProduct('W', new tabcorp.Product('Win', 0.15, function(places) {
-//        return places.slice(0, 1);
-//    });
-
-exports.testProductBet = {
+exports.testProduct = {
     setUp: function(cb) {
         this.product = new tabcorp.Product('Product1');
         cb();
@@ -20,10 +14,6 @@ exports.testProductBet = {
         test.done();
     },
     testRegisterBadBet: {
-        //testStringAmount: function(test) {
-        //    test.ok(!this.product.bet('1', '50'));
-        //    test.done();
-        //},
         testZeroAmount: function(test) {
             test.ok(!this.product.bet('2', 0));
             test.done();
@@ -95,6 +85,25 @@ exports.testProductCalculations = {
                 this.product.bet('7',  4);
 
             test.equals(this.product.calculateTotal(), 261);
+            test.done();
+        }
+    },
+    testTransforms: {
+        testWinTransform: function(test) {
+            test.deepEqual(tabcorp.Product.transform.WIN([1, 2, 3]), [1]);
+            test.deepEqual(tabcorp.Product.transform.WIN([1]), [1]);
+            test.done();
+        },
+        testPlaceTransform: function(test) {
+            test.deepEqual(tabcorp.Product.transform.PLACE([1, 2, 3]), [1, 2, 3]);
+            test.deepEqual(tabcorp.Product.transform.PLACE([3, 2, 1]), [3, 2, 1]);
+            test.deepEqual(tabcorp.Product.transform.PLACE([1]), [1]);
+            test.done();
+        },
+        testExactaTransform: function(test) {
+            test.deepEqual(tabcorp.Product.transform.EXACTA([1, 2, 3]), ['1,2']);
+            test.deepEqual(tabcorp.Product.transform.EXACTA([2, 1, 3]), ['2,1']);
+            test.deepEqual(tabcorp.Product.transform.EXACTA([1]), [1]);
             test.done();
         }
     },
@@ -185,6 +194,5 @@ exports.testProductCalculations = {
                 ]);
             test.done();
         }
-
     }
 };
