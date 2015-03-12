@@ -55,8 +55,7 @@ function ProductHandler() {
     };
 
     this.registerBet = function(product, pick, amount) {
-        amount = parseInt(amount);
-        if (!(product in products && amount > 0)) { return false; }
+        if (!(product in products)) { return false; }
         return products[product].bet(pick, amount);
     };
 

@@ -1,5 +1,11 @@
 var tabcorp = require('./lib.js');
 
+exports.testMathAdd = function(test) {
+    test.equal(tabcorp.Math.add(20, 5), 20 + 5);
+    test.equal(tabcorp.Math.add(0, 0), 0);
+    test.done();
+};
+
 exports.testProduct = {
     setUp: function(cb) {
         this.product = new tabcorp.Product('Product1');
@@ -194,5 +200,117 @@ exports.testProductCalculations = {
                 ]);
             test.done();
         }
+    }
+};
+
+exports.testProductHandler = {
+    setUp: function(cb) {
+        this.ph = new tabcorp.ProductHandler;
+        cb();
+    },
+    testBetWithNoProducts: function(test) {
+        test.ok(!this.ph.registerBet('non-existent', 'admire rakti', 100));
+        test.done();
+    },
+    testBetOnNonExistentProduct: function(test) {
+        this.ph.registerProduct('existent', new tabcorp.Product);
+        test.ok(!this.ph.registerBet('non-existent', 'admire rakti', 100));
+        test.done();
+    },
+    testEmptyDividends: function(test) {
+        test.deepEqual(this.ph.calculateDividends([1, 2, 3]), []);
+        test.done();
+    }
+};
+
+exports.testProductHandlerBets = {
+    setUp: function(cb) {
+        this.ph = new tabcorp.ProductHandler;
+        this.ph.registerProduct('W',
+            new tabcorp.Product('Win', 0.15, tabcorp.Product.transform.WIN));
+        this.ph.registerProduct('P',
+            new tabcorp.Product('Place', 0.12, tabcorp.Product.transform.PLACE));
+        this.ph.registerProduct('E',
+            new tabcorp.Product('Exacta', 0.18, tabcorp.Product.transform.EXACTA));
+        cb();
+    },
+    testGoodBet: function(test) {
+        test.ok(this.ph.registerBet('W', 1, 100));
+        test.done();
+    },
+    testBadAmount: function(test) {
+        test.ok(!this.ph.registerBet('W', 1, 'hello'));
+        test.ok(!this.ph.registerBet('W', 1, '0'));
+        test.ok(!this.ph.registerBet('W', 1, 0));
+        test.ok(!this.ph.registerBet('W', 1, -20));
+        test.ok(!this.ph.registerBet('W', 1, 0.5));
+        test.ok(!this.ph.registerBet('W', 1, NaN));
+        test.ok(!this.ph.registerBet('W', 1, []));
+        test.ok(!this.ph.registerBet('W', 1, {}));
+        test.ok(!this.ph.registerBet('W', 1, undefined));
+        test.ok(!this.ph.registerBet('W', 1, null));
+        test.ok(!this.ph.registerBet('W', 1, function() {}));
+        test.done();
+    },
+    testBadProduct: function(test) {
+        test.ok(!this.ph.registerBet('Q', 1, 100));
+        test.ok(!this.ph.registerBet('', 1, 100));
+        test.ok(!this.ph.registerBet([], 1, 100));
+        test.ok(!this.ph.registerBet({}, 1, 100));
+        test.ok(!this.ph.registerBet(undefined, 1, 100));
+        test.ok(!this.ph.registerBet(null, 1, 100));
+        test.done();
+    },
+    testDividendsCalculation: function(test) {
+        this.ph.registerBet('W', 1, 10);
+        this.ph.registerBet('W', 2, 10);
+        this.ph.registerBet('W', 3, 10);
+
+        this.ph.registerBet('P', 1, 10);
+        this.ph.registerBet('P', 2, 10);
+        this.ph.registerBet('P', 2, 10);
+        this.ph.registerBet('P', 3, 10);
+        this.ph.registerBet('P', 3, 10);
+        this.ph.registerBet('P', 3, 10);
+        this.ph.registerBet('P', 4, 10);
+        this.ph.registerBet('P', 4, 10);
+        this.ph.registerBet('P', 4, 10);
+        this.ph.registerBet('P', 4, 10);
+
+        this.ph.registerBet('E', '1,2', 10);
+        this.ph.registerBet('E', '1,2', 10);
+        this.ph.registerBet('E', '1,3', 10);
+        this.ph.registerBet('E', '2,3', 10);
+        this.ph.registerBet('E', '3,1', 10);
+        this.ph.registerBet('E', '2,1', 10);
+
+        test.deepEqual(this.ph.calculateDividends([1, 2, 3]),
+            [
+                [ 'Win'     , 1, 0.85 * 30 / 10 ],
+                [ 'Place'   , 1, 0.88 * 100 / 10 / 3 ],
+                [ 'Place'   , 2, 0.88 * 100 / 20 / 3 ],
+                [ 'Place'   , 3, 0.88 * 100 / 30 / 3 ],
+                [ 'Exacta'  , '1,2', 0.82 * 60 / 20 ]
+            ]);
+
+        test.deepEqual(this.ph.calculateDividends([1, 3, 2]),
+            [
+                [ 'Win'     , 1, 0.85 * 30 / 10 ],
+                [ 'Place'   , 1, 0.88 * 100 / 10 / 3 ],
+                [ 'Place'   , 3, 0.88 * 100 / 30 / 3 ],
+                [ 'Place'   , 2, 0.88 * 100 / 20 / 3 ],
+                [ 'Exacta'  , '1,3', 0.82 * 60 / 10 ]
+            ]);
+
+        test.deepEqual(this.ph.calculateDividends([2, 1, 5]),
+            [
+                [ 'Win'     , 2, 0.85 * 30 / 10 ],
+                [ 'Place'   , 2, 0.88 * 100 / 20 / 3 ],
+                [ 'Place'   , 1, 0.88 * 100 / 10 / 3 ],
+                [ 'Exacta'  , '2,1', 0.82 * 60 / 10 ]
+            ]);
+
+        test.deepEqual(this.ph.calculateDividends([7, 8, 9]), []);
+        test.done();
     }
 };
