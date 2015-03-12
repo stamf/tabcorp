@@ -5,6 +5,8 @@ Math.add = function(x, y) {
 function Product(name, commission, transform) {
     var bets = {};
 
+    // parseInt returns NaN for anything "bad",
+    //   any numeric comparison with NaN returns false which is useful
     this.bet = function(pick, amount) {
         amount = parseInt(amount);
         if (!(amount > 0)) {
@@ -21,12 +23,20 @@ function Product(name, commission, transform) {
 
     this.calculateTotal = function() {
         return Object.keys(bets)
-            .reduce(function(x, y) { return x.concat(bets[y]); }, [])
+            .reduce(function(x, y) { return x.concat(bets[y]); }, []) // reduce nested arrays to a single array
             .reduce(Math.add, 0);
     };
 
     this.calculateDividends = function(places) {
         var self = this;
+
+        // transform winning places into array of winners relevant to this product..
+        //   filter the winners by those that were actually picked..
+        //   map those registered winning picks to a tuple of [pick, dividend]
+        //     where dividend is: (1 - commission) * total bets in this product..
+        //       divided by the sum of the winning bets..
+        //       further divided by the number of winning pools
+
         return transform(places)
             .filter(function(p) { return p in bets; })
             .map(function(b) {
@@ -41,6 +51,7 @@ function Product(name, commission, transform) {
     };
 }
 
+// Product.transform functions turn the winner list into the winners relevant to product type
 Product.transform = {
     WIN     : function(places) { return places.slice(0, 1); },
     PLACE   : function(places) { return places; },
@@ -59,6 +70,8 @@ function ProductHandler() {
         return products[product].bet(pick, amount);
     };
 
+    // for each product, concatenate the calculated dividends
+    //   where the dividends themselves are mapped to a tuple of [product name, winning pick, dividend]
     this.calculateDividends = function(places) {
         return Object.keys(products).reduce(function(c, p) {
             return c.concat(products[p].calculateDividends(places).map(function(d) {
